@@ -1,1 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Classroom Timer</title>
 
+<style>
+  body {
+    margin: 0;
+    height: 100vh;
+    font-family: Arial, Helvetica, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: transparent;
+  }
+
+  .timer-container {
+    width: 90%;
+    max-width: 600px;
+    text-align: center;
+  }
+
+  .time-display {
+    font-size: 96px;
+    font-weight: bold;
+    margin-bottom: 20px;
+  }
+
+  .progress-bar {
+    width: 100%;
+    height: 16px;
+    background: #eee;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 24px;
+  }
+
+  .progress {
+    height: 100%;
+    width: 100%;
+    background: #4CAF50;
+    transition: width 1s linear;
+  }
+
+  .controls button,
+  .options select {
+    font-size: 18px;
+    padding: 10px 14px;
+    margin: 6px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+  }
+
+  .controls button {
+    background: #222;
+    color: #fff;
+  }
+
+  .options select {
+    background: #f5f5f5;
+  }
+</style>
+</head>
+
+<body>
+
+<div class="timer-container">
+
+  <div class="time-display" id="display">05:00</div>
+
+  <div class="progress-bar">
+    <div class="progress" id="progress"></div>
+  </div>
+
+  <div class="controls">
+    <button onclick="startTimer()">▶ Start</button>
+    <button onclick="pauseTimer()">⏸ Pause</button>
+    <button onclick="resetTimer()">🔁 Reset</button>
+  </div>
+
+  <div class="options">
+    <select id="mode" onchange="resetTimer()">
+      <option value="down">Count Down</option>
+      <option value="up">Count Up</option>
+    </select>
+
+    <select id="preset" onchange="setPreset()">
+      <option value="300">5 min</option>
+      <option value="600">10 min</option>
+      <option value="900">15 min</option>
+      <option value="120">2 min</option>
+    </select>
+
+    <select id="language" onchange="setLanguage()">
+      <option value="en">English</option>
+      <option value="es">Español</option>
+    </select>
+  </div>
+
+</div>
+
+<script>
+let totalTime = 300;
+let time = totalTime;
+let interval = null;
+
+const display = document.getElementById("display");
+const progress = document.getElementById("progress");
+
+const labels = {
+  en: {
+    start: "▶ Start",
+    pause: "⏸ Pause",
+    reset: "🔁 Reset",
+    down: "Count Down",
+    up: "Count Up"
+  },
+  es: {
+    start: "▶ Iniciar",
+    pause: "⏸ Pausar",
+    reset: "🔁 Reiniciar",
+    down: "Cuenta regresiva",
+    up: "Cuenta progresiva"
+  }
+};
+
+function updateDisplay() {
+  const minutes = Math.floor(time / 60);
+  const seconds = time % 60;
+  display.textContent =
+    String(minutes).padStart(2, "0") + ":" +
+    String(seconds).padStart(2, "0");
+}
+
+function updateProgress() {
+  const mode = document.getElementById("mode").value;
+  let percent =
+    mode === "down"
+      ? (time / totalTime) * 100
+      : (time / totalTime) * 100;
+  progress.style.width = Math.max(percent, 0) + "%";
+}
+
+function startTimer() {
+  if (interval) return;
+
+  interval = setInterval(() => {
+    const mode = document.getElementById("mode").value;
+
+    if (mode === "down") {
+      if (time > 0) time--;
+    } else {
+      time++;
+    }
+
+    updateDisplay();
+    updateProgress();
+  }, 1000);
+}
+
+function pauseTimer() {
+  clearInterval(interval);
+  interval = null;
+}
+
+function resetTimer() {
+  pauseTimer();
+  time = totalTime;
+  updateDisplay();
+  updateProgress();
+}
+
+function setPreset() {
+  totalTime = parseInt(document.getElementById("preset").value);
+  resetTimer();
+}
+
+function setLanguage() {
+  const lang = document.getElementById("language").value;
+  document.querySelectorAll(".controls button")[0].textContent = labels[lang].start;
+  document.querySelectorAll(".controls button")[1].textContent = labels[lang].pause;
+  document.querySelectorAll(".controls button")[2].textContent = labels[lang].reset;
+
+  document.getElementById("mode").options[0].text = labels[lang].down;
+  document.getElementById("mode").options[1].text = labels[lang].up;
+}
+
+updateDisplay();
+updateProgress();
+</script>
+
+</body>
+</html>
